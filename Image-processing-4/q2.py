@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 from sklearn.metrics import auc
 
 
@@ -15,39 +15,39 @@ def average_precision(detection_results, ground_truth):
         # detected는 numpy.array 타입으로 detection_results 행 중에서도
         # 현재 신뢰도 Threshold를 만족시키는 결과만 행만 들어가야 합니다
         # numpy의 where 함수를 이용하여 특정 신뢰도 이상이 되는 행들만 골라내봅시다.
-        detected = None
+        detected = detection_results[np.where(detection_results[:, 1] >= threshold)] 
         
         # 변수 TP는 numpy.array 타입으로 detected 행렬에서 TP에 해당하는 행만
         # 골라낸 것입니다. 
         # 힌트 : numpy.where을 활용하면 쉽게 구할 수 있습니다.
-        TP = None
+        TP = detected[np.where(detected[:,0] == 1)]
         
         # TP의 개수와, presicion을 구하기 위한 분모인 all detection 개수,
         # recall을 구하기 위한 all ground truth 개수를 알 수 있으므로 
         # 현재 Threshold 레벨에서의 precision과 recall을 구합니다.
-        precision = None
-        recall = None
+        precision = TP.shape[0] / detected.shape[0]
+        recall = TP.shape[0] / ground_truth
         
         precisions.append(precision)
         recalls.append(recall)
 
     # auc함수에 recall과 precision을 넣어 ap값을 구합니다.
-    ap = None
+    ap = auc(recalls, precisions)
     # matplotlib로 커브 곡선을 눈으로 확인해 보려면 아래 코드를 주석해제 하세요.
     # recalls와 precisions에는 각각 신뢰도 Threshold에 따라 변하는 recall과 대응하는 precision 값들이
     # 들어가야 합니다.
-    # from matplotlib import pyplot as plt
+    from matplotlib import pyplot as plt
     # from elice_utils import EliceUtils
-    # print(f"Area under curve = {ap}")
-    # plt.plot(recalls, precisions, marker='.')
-    # plt.savefig('precision-recall.png', dpi=300)
+    print(f"Area under curve = {ap}")
+    plt.plot(recalls, precisions, marker='.')
+    plt.show()
     # elice_utils = EliceUtils()
     # elice_utils.send_image("precision-recall.png")
     return ap
 
 
 def main():
-    detection_results = numpy.array([
+    detection_results = np.array([
         [1, 0.95],
         [1, 0.91],
         [1, 0.85],

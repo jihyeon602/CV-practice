@@ -28,11 +28,21 @@ def non_max_suppression(boxes, iou_threshold, confidence_threshold):
     nms_boxes = None
     
     # 박스의 confidence 값들을 내림차순으로 정렬하세요.
-    
+    boxes = boxes[numpy.where(boxes[:, 0] > confidence_threshold)]
+    indices = numpy.argsort(-boxes, axis=0)[:, 0]
     
     # IoU를 계산하여 박스를 제거하세요.
-    
-    
+    for i in range(boxes.shape[0]):
+        for j in range(i + 1, boxes.shape[0]):
+            if boxes[j, 0] == -1:
+                continue
+            
+            iou = intersection_over_union(boxes[indices[i], 1:], boxes[indices[j], 1:])
+            if iou >= iou_threshold:
+                boxes[j, 0] = -1
+
+    nms_boxes = boxes[numpy.where(boxes[:, 0] != -1)]   
+   
     # 제거된 박스를 반환하세요.
     
     return nms_boxes
@@ -52,4 +62,4 @@ if __name__ == "__main__":
     # 
     nms_boxes = non_max_suppression(boxes, 0.5, 0.3)
     nms_boxes = list(nms_boxes)
-    print(len(nms_boxes))
+    print("제거된 박스 개수:",len(nms_boxes))  # 4
